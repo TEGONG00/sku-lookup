@@ -31,9 +31,16 @@ function extractSearchQueries(sku) {
     queries.push(clean.substring(0, spaceIdx));
   }
 
-  const match = clean.match(/^(.+)-([A-Z]{1,2})$/i);
-  if (match) {
-    queries.push(match[1]);
+  const lastChar = clean[clean.length - 1];
+  if (lastChar && /^[A-Z]$/i.test(lastChar)) {
+    const q = clean.substring(0, clean.length - 1).trim();
+    if (q && !queries.includes(q)) queries.push(q);
+  }
+
+  const lastTwo = clean.substring(clean.length - 2);
+  if (lastTwo && /^[A-Z]{2}$/i.test(lastTwo)) {
+    const q = clean.substring(0, clean.length - 2).trim();
+    if (q && !queries.includes(q)) queries.push(q);
   }
 
   return queries;
@@ -47,9 +54,14 @@ function getVariantIndicator(sku) {
     return clean.substring(spaceIdx + 1).trim();
   }
 
-  const match = clean.match(/^(.+)-([A-Z]{1,2})$/i);
-  if (match) {
-    return match[2];
+  const lastChar = clean[clean.length - 1];
+  if (lastChar && /^[A-Z]$/i.test(lastChar)) {
+    return lastChar;
+  }
+
+  const lastTwo = clean.substring(clean.length - 2);
+  if (lastTwo && /^[A-Z]{2}$/i.test(lastTwo)) {
+    return lastTwo;
   }
 
   return null;
@@ -83,6 +95,7 @@ function matchVariant(sku, variants, variantIndicator) {
 async function lookupSKU(sku) {
   const queries = extractSearchQueries(sku);
   const variantIndicator = getVariantIndicator(sku);
+
   let suggest = null;
   let products = [];
 
@@ -92,13 +105,20 @@ async function lookupSKU(sku) {
         `https://${SHOPIFY_DOMAIN}/search/suggest.json?q=${encodeURIComponent(q)}&resources[type]=product`
       );
       products = suggest?.resources?.results?.products || [];
-      if (products.length > 0) break;
+      if (products.length > 0) {
+        console.log(`[lookup] "${sku}" q="${q}" => ${products[0].title}`);
+        break;
+      }
     } catch (e) {
+      console.log(`[lookup] "${sku}" q="${q}" => error: ${e.message}`);
       continue;
     }
   }
 
-  console.log(`[lookup] "${sku}" => ${products.length > 0 ? "found" : "not found"}`);
+  if (products.length === 0) {
+    console.log(`[lookup] "${sku}" => not found, queries: ${JSON.stringify(queries)}`);
+    return { sku, imageUrl: "", available: false, variantSku: "", error: null };
+  }
 
   if (products.length === 0) {
     return { sku, imageUrl: "", available: false, variantSku: "", error: null };
