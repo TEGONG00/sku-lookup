@@ -84,8 +84,6 @@ function matchVariant(sku, variants, variantIndicator) {
 async function lookupSKU(sku) {
   const queries = extractSearchQueries(sku);
   const variantIndicator = getVariantIndicator(sku);
-  console.log(`[lookup] "${sku}" => ${products.length > 0 ? "found" : "not found"}`);
-
   let suggest = null;
   let products = [];
 
@@ -100,6 +98,8 @@ async function lookupSKU(sku) {
       continue;
     }
   }
+
+  console.log(`[lookup] "${sku}" => ${products.length > 0 ? "found" : "not found"}`);
 
   if (products.length === 0) {
     return { sku, imageUrl: "", available: false, variantSku: "", error: null };
