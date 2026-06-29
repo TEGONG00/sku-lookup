@@ -1,0 +1,9 @@
+{
+  "name": "sku-lookup-server",
+  "version": "1.0.0",
+  "description": "SKU Lookup Webhook Server for LevelUpForLess",
+  "main": "sku-lookup-server.js",
+  "scripts": {
+    "start": "node sku-lookup-server.js"
+  }
+}
