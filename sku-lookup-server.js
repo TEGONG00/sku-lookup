@@ -31,12 +31,9 @@ function extractSearchQueries(sku) {
     queries.push(clean.substring(0, spaceIdx));
   }
 
-  const dashParts = clean.split("-");
-  if (dashParts.length >= 2) {
-    const lastPart = dashParts[dashParts.length - 1];
-    if (lastPart.length <= 2 && lastPart.match(/^[A-Z]+$/i)) {
-      queries.push(dashParts.slice(0, -1).join("-"));
-    }
+  const match = clean.match(/^(.+)-([A-Z]{1,2})$/i);
+  if (match) {
+    queries.push(match[1]);
   }
 
   return queries;
@@ -44,15 +41,17 @@ function extractSearchQueries(sku) {
 
 function getVariantIndicator(sku) {
   const clean = sku.trim();
+
   const spaceIdx = clean.lastIndexOf(" ");
   if (spaceIdx > 0) {
     return clean.substring(spaceIdx + 1).trim();
   }
-  const dashParts = clean.split("-");
-  const lastPart = dashParts[dashParts.length - 1];
-  if (lastPart.length <= 2 && lastPart.match(/^[A-Z]+$/i)) {
-    return lastPart;
+
+  const match = clean.match(/^(.+)-([A-Z]{1,2})$/i);
+  if (match) {
+    return match[2];
   }
+
   return null;
 }
 
